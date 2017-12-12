@@ -416,7 +416,8 @@ class BootstrapTable extends Component {
   render() {
     const style = {
       height: this.props.height,
-      maxHeight: this.props.maxHeight
+      maxHeight: this.props.maxHeight,
+      minHeight: this.props.minHeight
     };
 
     const columns = this.getColumnsDescription(this.props);
@@ -1576,6 +1577,7 @@ BootstrapTable.propTypes = {
   keyField: PropTypes.string,
   height: PropTypes.oneOfType([ PropTypes.string, PropTypes.number ]),
   maxHeight: PropTypes.oneOfType([ PropTypes.string, PropTypes.number ]),
+  minHeight: PropTypes.oneOfType([ PropTypes.string, PropTypes.number ]),
   data: PropTypes.oneOfType([ PropTypes.array, PropTypes.object ]),
   version: PropTypes.string,  // bootstrap version
   remote: PropTypes.oneOfType([ PropTypes.bool, PropTypes.func ]), // remote data, default is false
@@ -1767,6 +1769,7 @@ BootstrapTable.defaultProps = {
   },
   height: '100%',
   maxHeight: undefined,
+  minHeight: undefined,
   striped: false,
   bordered: true,
   hover: false,

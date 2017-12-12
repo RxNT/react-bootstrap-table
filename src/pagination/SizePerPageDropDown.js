@@ -4,11 +4,21 @@ import PropTypes from 'prop-types';
 const sizePerPageDefaultClass = 'react-bs-table-sizePerPage-dropdown';
 
 class SizePerPageDropDown extends Component {
+
+  constructor(props) {
+    super(props);
+    this.onClick = this.onClick.bind(this);
+  }
+
+  onClick(e) {
+    e.preventDefault();
+    this.props.onClick();
+  }
+
   render() {
     const {
       open,
       hidden,
-      onClick,
       options,
       className,
       variation,
@@ -25,7 +35,7 @@ class SizePerPageDropDown extends Component {
         <button className={ `btn ${btnContextual} dropdown-toggle` }
           id='pageDropDown' data-toggle='dropdown'
           aria-expanded={ open }
-          onClick={ onClick }>
+          onClick={ this.onClick }>
           { currSizePerPage }
           <span>
           { ' ' }

@@ -22,7 +22,7 @@ addProducts(5);
 export default class BasicTable extends React.Component {
   render() {
     return (
-      <BootstrapTable data={ products }>
+      <BootstrapTable data={ products } minHeight='100px'>
           <TableHeaderColumn dataField='id' isKey={ true }>Product ID</TableHeaderColumn>
           <TableHeaderColumn dataField='name'>Product Name</TableHeaderColumn>
           <TableHeaderColumn dataField='price'>Product Price</TableHeaderColumn>

@@ -361,14 +361,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	    _this._adjustHeaderWidth = _this._adjustHeaderWidth.bind(_this);
 	    _this._adjustHeight = _this._adjustHeight.bind(_this);
 	    _this._adjustTable = _this._adjustTable.bind(_this);
+	    _this.toggleExpandAllChilds = _this.toggleExpandAllChilds.bind(_this);
+
+	    var expandedKeys = [];
+	    if (_this.props.options.expandAllChilds !== null && _this.props.options.expandAllChilds !== undefined && _this.props.options.expandAllChilds) {
+	      expandedKeys = _this.store.getAllRowkey();
+	    } else if (_this.props.options.expanding !== undefined && _this.props.options.expanding !== null) {
+	      expandedKeys = _this.props.options.expanding;
+	    }
 
 	    _this.state = {
 	      data: _this.getTableData(),
 	      currPage: currPage,
-	      expanding: _this.props.options.expanding || [],
+	      expanding: expandedKeys,
 	      sizePerPage: _this.props.options.sizePerPage || _Const2.default.SIZE_PER_PAGE_LIST[0],
 	      selectedRowKeys: _this.store.getSelectedRowKeys(),
 	      reset: false,
+	      expandAllChilds: _this.props.options.expandAllChilds,
 	      x: _this.props.keyBoardNav ? 0 : -1,
 	      y: _this.props.keyBoardNav ? 0 : -1
 	    };
@@ -878,7 +887,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: function render() {
 	      var style = {
 	        height: this.props.height,
-	        maxHeight: this.props.maxHeight
+	        maxHeight: this.props.maxHeight,
+	        minHeight: this.props.minHeight
 	      };
 
 	      var columns = this.getColumnsDescription(this.props);
@@ -948,6 +958,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	              reset: this.state.reset,
 	              expandColumnVisible: expandColumnOptions.expandColumnVisible,
 	              expandColumnComponent: expandColumnOptions.expandColumnComponent,
+	              expandedColumnHeaderComponent: expandColumnOptions.expandedColumnHeaderComponent,
+	              expandAllChilds: this.state.expandAllChilds,
+	              toggleExpandAllChilds: this.toggleExpandAllChilds,
+	              showExpandAllHeaderColumn: this.props.options.showExpandAllHeaderColumn,
 	              expandColumnBeforeSelectColumn: expandColumnOptions.expandColumnBeforeSelectColumn },
 	            this.props.children
 	          ),
@@ -1105,6 +1119,30 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }, function () {
 	        _this5._adjustHeaderWidth();
 	      });
+	    }
+	  }, {
+	    key: 'toggleExpandAllChilds',
+	    value: function toggleExpandAllChilds() {
+	      var expandAllChilds = this.state.expandAllChilds;
+
+	      var compScope = this;
+	      if (expandAllChilds) {
+	        this.setState(function () {
+	          return {
+	            expanding: [],
+	            expandAllChilds: !expandAllChilds,
+	            reset: false
+	          };
+	        });
+	      } else {
+	        this.setState(function () {
+	          return {
+	            expanding: compScope.store.getAllRowkey(),
+	            expandAllChilds: !expandAllChilds,
+	            reset: false
+	          };
+	        });
+	      }
 	    }
 	  }, {
 	    key: '__handlePaginationData__REACT_HOT_LOADER__',
@@ -2143,6 +2181,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  keyField: _propTypes2.default.string,
 	  height: _propTypes2.default.oneOfType([_propTypes2.default.string, _propTypes2.default.number]),
 	  maxHeight: _propTypes2.default.oneOfType([_propTypes2.default.string, _propTypes2.default.number]),
+	  minHeight: _propTypes2.default.oneOfType([_propTypes2.default.string, _propTypes2.default.number]),
 	  data: _propTypes2.default.oneOfType([_propTypes2.default.array, _propTypes2.default.object]),
 	  version: _propTypes2.default.string, // bootstrap version
 	  remote: _propTypes2.default.oneOfType([_propTypes2.default.bool, _propTypes2.default.func]), // remote data, default is false
@@ -2282,7 +2321,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    beforeShowError: _propTypes2.default.func,
 	    printToolBar: _propTypes2.default.bool,
 	    insertFailIndicator: _propTypes2.default.string,
-	    noAutoBOM: _propTypes2.default.bool
+	    noAutoBOM: _propTypes2.default.bool,
+	    expandAllChilds: _propTypes2.default.bool,
+	    showExpandAllHeaderColumn: _propTypes2.default.bool
 	  }),
 	  fetchInfo: _propTypes2.default.shape({
 	    dataTotalSize: _propTypes2.default.number
@@ -2301,6 +2342,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    columnWidth: _propTypes2.default.oneOfType([_propTypes2.default.number, _propTypes2.default.string]),
 	    expandColumnVisible: _propTypes2.default.bool,
 	    expandColumnComponent: _propTypes2.default.func,
+	    expandedColumnHeaderComponent: _propTypes2.default.func,
 	    expandColumnBeforeSelectColumn: _propTypes2.default.bool
 	  }),
 	  footer: _propTypes2.default.bool
@@ -2314,10 +2356,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  expandColumnOptions: {
 	    expandColumnVisible: false,
 	    expandColumnComponent: undefined,
+	    expandedColumnHeaderComponent: undefined,
 	    expandColumnBeforeSelectColumn: true
 	  },
 	  height: '100%',
 	  maxHeight: undefined,
+	  minHeight: undefined,
 	  striped: false,
 	  bordered: true,
 	  hover: false,
@@ -2449,7 +2493,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    beforeShowError: undefined,
 	    printToolBar: true,
 	    insertFailIndicator: _Const2.default.INSERT_FAIL_INDICATOR,
-	    noAutoBOM: true
+	    noAutoBOM: true,
+	    expandAllChilds: false,
+	    showExpandAllHeaderColumn: false
 	  },
 	  fetchInfo: {
 	    dataTotalSize: 0
@@ -2474,9 +2520,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(BootstrapTable, 'BootstrapTable', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/BootstrapTable.js');
+	  __REACT_HOT_LOADER__.register(BootstrapTable, 'BootstrapTable', 'D:/RxNTGit/react-bootstrap-table/src/BootstrapTable.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/BootstrapTable.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/BootstrapTable.js');
 	}();
 
 	;
@@ -4829,9 +4875,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(CONST_VAR, 'CONST_VAR', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/Const.js');
+	  __REACT_HOT_LOADER__.register(CONST_VAR, 'CONST_VAR', 'D:/RxNTGit/react-bootstrap-table/src/Const.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/Const.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/Const.js');
 	}();
 
 	;
@@ -5285,11 +5331,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(TableHeaderColumn, 'TableHeaderColumn', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/TableHeaderColumn.js');
+	  __REACT_HOT_LOADER__.register(TableHeaderColumn, 'TableHeaderColumn', 'D:/RxNTGit/react-bootstrap-table/src/TableHeaderColumn.js');
 
-	  __REACT_HOT_LOADER__.register(filterTypeArray, 'filterTypeArray', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/TableHeaderColumn.js');
+	  __REACT_HOT_LOADER__.register(filterTypeArray, 'filterTypeArray', 'D:/RxNTGit/react-bootstrap-table/src/TableHeaderColumn.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/TableHeaderColumn.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/TableHeaderColumn.js');
 	}();
 
 	;
@@ -5447,7 +5493,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/util.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/util.js');
 	}();
 
 	;
@@ -5669,13 +5715,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(legalComparators, 'legalComparators', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/filters/Date.js');
+	  __REACT_HOT_LOADER__.register(legalComparators, 'legalComparators', 'D:/RxNTGit/react-bootstrap-table/src/filters/Date.js');
 
-	  __REACT_HOT_LOADER__.register(dateParser, 'dateParser', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/filters/Date.js');
+	  __REACT_HOT_LOADER__.register(dateParser, 'dateParser', 'D:/RxNTGit/react-bootstrap-table/src/filters/Date.js');
 
-	  __REACT_HOT_LOADER__.register(DateFilter, 'DateFilter', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/filters/Date.js');
+	  __REACT_HOT_LOADER__.register(DateFilter, 'DateFilter', 'D:/RxNTGit/react-bootstrap-table/src/filters/Date.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/filters/Date.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/filters/Date.js');
 	}();
 
 	;
@@ -5824,9 +5870,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(TextFilter, 'TextFilter', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/filters/Text.js');
+	  __REACT_HOT_LOADER__.register(TextFilter, 'TextFilter', 'D:/RxNTGit/react-bootstrap-table/src/filters/Text.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/filters/Text.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/filters/Text.js');
 	}();
 
 	;
@@ -5959,9 +6005,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(RegexFilter, 'RegexFilter', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/filters/Regex.js');
+	  __REACT_HOT_LOADER__.register(RegexFilter, 'RegexFilter', 'D:/RxNTGit/react-bootstrap-table/src/filters/Regex.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/filters/Regex.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/filters/Regex.js');
 	}();
 
 	;
@@ -6157,11 +6203,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(optionsEquals, 'optionsEquals', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/filters/Select.js');
+	  __REACT_HOT_LOADER__.register(optionsEquals, 'optionsEquals', 'D:/RxNTGit/react-bootstrap-table/src/filters/Select.js');
 
-	  __REACT_HOT_LOADER__.register(SelectFilter, 'SelectFilter', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/filters/Select.js');
+	  __REACT_HOT_LOADER__.register(SelectFilter, 'SelectFilter', 'D:/RxNTGit/react-bootstrap-table/src/filters/Select.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/filters/Select.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/filters/Select.js');
 	}();
 
 	;
@@ -6438,11 +6484,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(legalComparators, 'legalComparators', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/filters/Number.js');
+	  __REACT_HOT_LOADER__.register(legalComparators, 'legalComparators', 'D:/RxNTGit/react-bootstrap-table/src/filters/Number.js');
 
-	  __REACT_HOT_LOADER__.register(NumberFilter, 'NumberFilter', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/filters/Number.js');
+	  __REACT_HOT_LOADER__.register(NumberFilter, 'NumberFilter', 'D:/RxNTGit/react-bootstrap-table/src/filters/Number.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/filters/Number.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/filters/Number.js');
 	}();
 
 	;
@@ -6586,7 +6632,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	          reset = _props.reset,
 	          version = _props.version,
 	          condensed = _props.condensed,
-	          bordered = _props.bordered;
+	          bordered = _props.bordered,
+	          expandedColumnHeaderComponent = _props.expandedColumnHeaderComponent,
+	          expandAllChilds = _props.expandAllChilds,
+	          toggleExpandAllChilds = _props.toggleExpandAllChilds,
+	          showExpandAllHeaderColumn = _props.showExpandAllHeaderColumn;
 
 	      var containerClasses = (0, _classnames2.default)('react-bs-container-header', 'table-header-wrapper', this.props.headerContainerClass);
 	      var customTableClasses = {
@@ -6605,7 +6655,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var rowKey = 0;
 
 	      rows[0] = [];
-	      rows[0].push([this.props.expandColumnVisible && this.props.expandColumnBeforeSelectColumn && _react2.default.createElement(_ExpandRowHeaderColumn2.default, { key: 'expandCol', rowCount: rowCount + 1 })], [this.renderSelectRowHeader(rowCount + 1, rowKey++)], [this.props.expandColumnVisible && !this.props.expandColumnBeforeSelectColumn && _react2.default.createElement(_ExpandRowHeaderColumn2.default, { key: 'expandCol', rowCount: rowCount + 1 })]);
+	      rows[0].push([this.props.expandColumnVisible && this.props.expandColumnBeforeSelectColumn && _react2.default.createElement(_ExpandRowHeaderColumn2.default, { key: 'expandCol', rowCount: rowCount + 1,
+	        expandedColumnHeaderComponent: expandedColumnHeaderComponent,
+	        expandAllChilds: expandAllChilds,
+	        toggleExpandAllChilds: toggleExpandAllChilds,
+	        showExpandAllHeaderColumn: showExpandAllHeaderColumn })], [this.renderSelectRowHeader(rowCount + 1, rowKey++)], [this.props.expandColumnVisible && !this.props.expandColumnBeforeSelectColumn && _react2.default.createElement(_ExpandRowHeaderColumn2.default, { key: 'expandCol', rowCount: rowCount + 1,
+	        expandedColumnHeaderComponent: expandedColumnHeaderComponent,
+	        expandAllChilds: expandAllChilds,
+	        toggleExpandAllChilds: toggleExpandAllChilds,
+	        showExpandAllHeaderColumn: showExpandAllHeaderColumn })]);
 
 	      _react2.default.Children.forEach(this.props.children, function (elm) {
 	        if (elm === null || elm === undefined) {
@@ -6709,8 +6767,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	  reset: _propTypes2.default.bool,
 	  expandColumnVisible: _propTypes2.default.bool,
 	  expandColumnComponent: _propTypes2.default.func,
+	  expandedColumnHeaderComponent: _propTypes2.default.func,
 	  expandColumnBeforeSelectColumn: _propTypes2.default.bool,
-	  version: _propTypes2.default.string
+	  version: _propTypes2.default.string,
+	  expandAllChilds: _propTypes2.default.bool,
+	  toggleExpandAllChilds: _propTypes2.default.func,
+	  showExpandAllHeaderColumn: _propTypes2.default.bool
 	};
 
 	var _default = TableHeader;
@@ -6722,13 +6784,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(Checkbox, 'Checkbox', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/TableHeader.js');
+	  __REACT_HOT_LOADER__.register(Checkbox, 'Checkbox', 'D:/RxNTGit/react-bootstrap-table/src/TableHeader.js');
 
-	  __REACT_HOT_LOADER__.register(getSortOrder, 'getSortOrder', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/TableHeader.js');
+	  __REACT_HOT_LOADER__.register(getSortOrder, 'getSortOrder', 'D:/RxNTGit/react-bootstrap-table/src/TableHeader.js');
 
-	  __REACT_HOT_LOADER__.register(TableHeader, 'TableHeader', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/TableHeader.js');
+	  __REACT_HOT_LOADER__.register(TableHeader, 'TableHeader', 'D:/RxNTGit/react-bootstrap-table/src/TableHeader.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/TableHeader.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/TableHeader.js');
 	}();
 
 	;
@@ -6798,9 +6860,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(SelectRowHeaderColumn, 'SelectRowHeaderColumn', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/SelectRowHeaderColumn.js');
+	  __REACT_HOT_LOADER__.register(SelectRowHeaderColumn, 'SelectRowHeaderColumn', 'D:/RxNTGit/react-bootstrap-table/src/SelectRowHeaderColumn.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/SelectRowHeaderColumn.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/SelectRowHeaderColumn.js');
 	}();
 
 	;
@@ -6836,21 +6898,42 @@ return /******/ (function(modules) { // webpackBootstrap
 	var ExpandRowHeaderColumn = function (_Component) {
 	  _inherits(ExpandRowHeaderColumn, _Component);
 
-	  function ExpandRowHeaderColumn() {
+	  function ExpandRowHeaderColumn(props) {
 	    _classCallCheck(this, ExpandRowHeaderColumn);
 
-	    return _possibleConstructorReturn(this, (ExpandRowHeaderColumn.__proto__ || Object.getPrototypeOf(ExpandRowHeaderColumn)).apply(this, arguments));
+	    var _this = _possibleConstructorReturn(this, (ExpandRowHeaderColumn.__proto__ || Object.getPrototypeOf(ExpandRowHeaderColumn)).call(this, props));
+
+	    _this.toggleExpandAllChilds = _this.toggleExpandAllChilds.bind(_this);
+	    return _this;
 	  }
 
 	  _createClass(ExpandRowHeaderColumn, [{
+	    key: 'toggleExpandAllChilds',
+	    value: function toggleExpandAllChilds() {
+	      this.props.toggleExpandAllChilds();
+	    }
+	  }, {
 	    key: 'render',
 	    value: function render() {
+	      var _props = this.props,
+	          expandedColumnHeaderComponent = _props.expandedColumnHeaderComponent,
+	          expandAllChilds = _props.expandAllChilds,
+	          showExpandAllHeaderColumn = _props.showExpandAllHeaderColumn;
+
+	      var expandedHeaderComponent = expandAllChilds ? '(-)' : '(+)';
+	      var ExpandedColumnHeaderComponent = expandedColumnHeaderComponent;
+
 	      return _react2.default.createElement(
 	        'th',
 	        { rowSpan: this.props.rowCount, style: { textAlign: 'center' },
 	          className: 'react-bs-table-expand-cell',
 	          'data-is-only-head': false },
-	        this.props.children
+	        showExpandAllHeaderColumn && _react2.default.createElement(
+	          'div',
+	          { onClick: this.toggleExpandAllChilds },
+	          expandedColumnHeaderComponent ? _react2.default.createElement(ExpandedColumnHeaderComponent, {
+	            expandAllChilds: this.props.expandAllChilds }) : expandedHeaderComponent
+	        )
 	      );
 	    }
 	  }]);
@@ -6859,8 +6942,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	}(_react.Component);
 
 	ExpandRowHeaderColumn.propTypes = {
-	  children: _propTypes2.default.node,
-	  rowCount: _propTypes2.default.number
+	  expandedColumnHeaderComponent: _propTypes2.default.func,
+	  rowCount: _propTypes2.default.number,
+	  expandAllChilds: _propTypes2.default.bool,
+	  toggleExpandAllChilds: _propTypes2.default.func,
+	  showExpandAllHeaderColumn: _propTypes2.default.bool
 	};
 	var _default = ExpandRowHeaderColumn;
 	exports.default = _default;
@@ -6871,9 +6957,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(ExpandRowHeaderColumn, 'ExpandRowHeaderColumn', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/ExpandRowHeaderColumn.js');
+	  __REACT_HOT_LOADER__.register(ExpandRowHeaderColumn, 'ExpandRowHeaderColumn', 'D:/RxNTGit/react-bootstrap-table/src/ExpandRowHeaderColumn.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/ExpandRowHeaderColumn.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/ExpandRowHeaderColumn.js');
 	}();
 
 	;
@@ -7018,9 +7104,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(TableFooter, 'TableFooter', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/TableFooter.js');
+	  __REACT_HOT_LOADER__.register(TableFooter, 'TableFooter', 'D:/RxNTGit/react-bootstrap-table/src/TableFooter.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/TableFooter.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/TableFooter.js');
 	}();
 
 	;
@@ -7805,9 +7891,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(TableBody, 'TableBody', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/TableBody.js');
+	  __REACT_HOT_LOADER__.register(TableBody, 'TableBody', 'D:/RxNTGit/react-bootstrap-table/src/TableBody.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/TableBody.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/TableBody.js');
 	}();
 
 	;
@@ -8062,9 +8148,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(TableRow, 'TableRow', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/TableRow.js');
+	  __REACT_HOT_LOADER__.register(TableRow, 'TableRow', 'D:/RxNTGit/react-bootstrap-table/src/TableRow.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/TableRow.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/TableRow.js');
 	}();
 
 	;
@@ -8340,9 +8426,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(TableColumn, 'TableColumn', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/TableColumn.js');
+	  __REACT_HOT_LOADER__.register(TableColumn, 'TableColumn', 'D:/RxNTGit/react-bootstrap-table/src/TableColumn.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/TableColumn.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/TableColumn.js');
 	}();
 
 	;
@@ -8796,9 +8882,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(TableEditColumn, 'TableEditColumn', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/TableEditColumn.js');
+	  __REACT_HOT_LOADER__.register(TableEditColumn, 'TableEditColumn', 'D:/RxNTGit/react-bootstrap-table/src/TableEditColumn.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/TableEditColumn.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/TableEditColumn.js');
 	}();
 
 	;
@@ -8946,9 +9032,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(editor, 'editor', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/Editor.js');
+	  __REACT_HOT_LOADER__.register(editor, 'editor', 'D:/RxNTGit/react-bootstrap-table/src/Editor.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/Editor.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/Editor.js');
 	}();
 
 	;
@@ -8991,7 +9077,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(notice, 'notice', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/Notification.js');
+	  __REACT_HOT_LOADER__.register(notice, 'notice', 'D:/RxNTGit/react-bootstrap-table/src/Notification.js');
 	}();
 
 	;
@@ -9072,9 +9158,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(ExpandComponent, 'ExpandComponent', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/ExpandComponent.js');
+	  __REACT_HOT_LOADER__.register(ExpandComponent, 'ExpandComponent', 'D:/RxNTGit/react-bootstrap-table/src/ExpandComponent.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/ExpandComponent.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/ExpandComponent.js');
 	}();
 
 	;
@@ -9521,9 +9607,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(PaginationList, 'PaginationList', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/pagination/PaginationList.js');
+	  __REACT_HOT_LOADER__.register(PaginationList, 'PaginationList', 'D:/RxNTGit/react-bootstrap-table/src/pagination/PaginationList.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/pagination/PaginationList.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/pagination/PaginationList.js');
 	}();
 
 	;
@@ -9628,9 +9714,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(PageButton, 'PageButton', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/pagination/PageButton.js');
+	  __REACT_HOT_LOADER__.register(PageButton, 'PageButton', 'D:/RxNTGit/react-bootstrap-table/src/pagination/PageButton.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/pagination/PageButton.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/pagination/PageButton.js');
 	}();
 
 	;
@@ -9668,19 +9754,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	var SizePerPageDropDown = function (_Component) {
 	  _inherits(SizePerPageDropDown, _Component);
 
-	  function SizePerPageDropDown() {
+	  function SizePerPageDropDown(props) {
 	    _classCallCheck(this, SizePerPageDropDown);
 
-	    return _possibleConstructorReturn(this, (SizePerPageDropDown.__proto__ || Object.getPrototypeOf(SizePerPageDropDown)).apply(this, arguments));
+	    var _this = _possibleConstructorReturn(this, (SizePerPageDropDown.__proto__ || Object.getPrototypeOf(SizePerPageDropDown)).call(this, props));
+
+	    _this.onClick = _this.onClick.bind(_this);
+	    return _this;
 	  }
 
 	  _createClass(SizePerPageDropDown, [{
+	    key: 'onClick',
+	    value: function onClick(e) {
+	      e.preventDefault();
+	      this.props.onClick();
+	    }
+	  }, {
 	    key: 'render',
 	    value: function render() {
 	      var _props = this.props,
 	          open = _props.open,
 	          hidden = _props.hidden,
-	          onClick = _props.onClick,
 	          options = _props.options,
 	          className = _props.className,
 	          variation = _props.variation,
@@ -9700,7 +9794,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	          { className: 'btn ' + btnContextual + ' dropdown-toggle',
 	            id: 'pageDropDown', 'data-toggle': 'dropdown',
 	            'aria-expanded': open,
-	            onClick: onClick },
+	            onClick: this.onClick },
 	          currSizePerPage,
 	          _react2.default.createElement(
 	            'span',
@@ -9748,11 +9842,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(sizePerPageDefaultClass, 'sizePerPageDefaultClass', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/pagination/SizePerPageDropDown.js');
+	  __REACT_HOT_LOADER__.register(sizePerPageDefaultClass, 'sizePerPageDefaultClass', 'D:/RxNTGit/react-bootstrap-table/src/pagination/SizePerPageDropDown.js');
 
-	  __REACT_HOT_LOADER__.register(SizePerPageDropDown, 'SizePerPageDropDown', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/pagination/SizePerPageDropDown.js');
+	  __REACT_HOT_LOADER__.register(SizePerPageDropDown, 'SizePerPageDropDown', 'D:/RxNTGit/react-bootstrap-table/src/pagination/SizePerPageDropDown.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/pagination/SizePerPageDropDown.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/pagination/SizePerPageDropDown.js');
 	}();
 
 	;
@@ -10476,9 +10570,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(ToolBar, 'ToolBar', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/ToolBar.js');
+	  __REACT_HOT_LOADER__.register(ToolBar, 'ToolBar', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/ToolBar.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/ToolBar.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/ToolBar.js');
 	}();
 
 	;
@@ -11716,11 +11810,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(defaultModalClassName, 'defaultModalClassName', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/InsertModal.js');
+	  __REACT_HOT_LOADER__.register(defaultModalClassName, 'defaultModalClassName', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/InsertModal.js');
 
-	  __REACT_HOT_LOADER__.register(InsertModal, 'InsertModal', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/InsertModal.js');
+	  __REACT_HOT_LOADER__.register(InsertModal, 'InsertModal', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/InsertModal.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/InsertModal.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/InsertModal.js');
 	}();
 
 	;
@@ -11880,9 +11974,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(InsertModalHeader, 'InsertModalHeader', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/InsertModalHeader.js');
+	  __REACT_HOT_LOADER__.register(InsertModalHeader, 'InsertModalHeader', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/InsertModalHeader.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/InsertModalHeader.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/InsertModalHeader.js');
 	}();
 
 	;
@@ -12051,9 +12145,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(InsertModalFooter, 'InsertModalFooter', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/InsertModalFooter.js');
+	  __REACT_HOT_LOADER__.register(InsertModalFooter, 'InsertModalFooter', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/InsertModalFooter.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/InsertModalFooter.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/InsertModalFooter.js');
 	}();
 
 	;
@@ -12216,9 +12310,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(InsertModalBody, 'InsertModalBody', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/InsertModalBody.js');
+	  __REACT_HOT_LOADER__.register(InsertModalBody, 'InsertModalBody', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/InsertModalBody.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/InsertModalBody.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/InsertModalBody.js');
 	}();
 
 	;
@@ -12327,11 +12421,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(insertBtnDefaultClass, 'insertBtnDefaultClass', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/InsertButton.js');
+	  __REACT_HOT_LOADER__.register(insertBtnDefaultClass, 'insertBtnDefaultClass', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/InsertButton.js');
 
-	  __REACT_HOT_LOADER__.register(InsertButton, 'InsertButton', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/InsertButton.js');
+	  __REACT_HOT_LOADER__.register(InsertButton, 'InsertButton', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/InsertButton.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/InsertButton.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/InsertButton.js');
 	}();
 
 	;
@@ -12440,11 +12534,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(deleteBtnDefaultClass, 'deleteBtnDefaultClass', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/DeleteButton.js');
+	  __REACT_HOT_LOADER__.register(deleteBtnDefaultClass, 'deleteBtnDefaultClass', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/DeleteButton.js');
 
-	  __REACT_HOT_LOADER__.register(DeleteButton, 'DeleteButton', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/DeleteButton.js');
+	  __REACT_HOT_LOADER__.register(DeleteButton, 'DeleteButton', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/DeleteButton.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/DeleteButton.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/DeleteButton.js');
 	}();
 
 	;
@@ -12553,11 +12647,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(exportCsvBtnDefaultClass, 'exportCsvBtnDefaultClass', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/ExportCSVButton.js');
+	  __REACT_HOT_LOADER__.register(exportCsvBtnDefaultClass, 'exportCsvBtnDefaultClass', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/ExportCSVButton.js');
 
-	  __REACT_HOT_LOADER__.register(ExportCSVButton, 'ExportCSVButton', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/ExportCSVButton.js');
+	  __REACT_HOT_LOADER__.register(ExportCSVButton, 'ExportCSVButton', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/ExportCSVButton.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/ExportCSVButton.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/ExportCSVButton.js');
 	}();
 
 	;
@@ -12669,11 +12763,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(showSelectedOnlyBtnDefaultClass, 'showSelectedOnlyBtnDefaultClass', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/ShowSelectedOnlyButton.js');
+	  __REACT_HOT_LOADER__.register(showSelectedOnlyBtnDefaultClass, 'showSelectedOnlyBtnDefaultClass', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/ShowSelectedOnlyButton.js');
 
-	  __REACT_HOT_LOADER__.register(ShowSelectedOnlyButton, 'ShowSelectedOnlyButton', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/ShowSelectedOnlyButton.js');
+	  __REACT_HOT_LOADER__.register(ShowSelectedOnlyButton, 'ShowSelectedOnlyButton', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/ShowSelectedOnlyButton.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/ShowSelectedOnlyButton.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/ShowSelectedOnlyButton.js');
 	}();
 
 	;
@@ -12779,9 +12873,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(SearchField, 'SearchField', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/SearchField.js');
+	  __REACT_HOT_LOADER__.register(SearchField, 'SearchField', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/SearchField.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/SearchField.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/SearchField.js');
 	}();
 
 	;
@@ -12882,11 +12976,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(clearBtnDefaultClass, 'clearBtnDefaultClass', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/ClearSearchButton.js');
+	  __REACT_HOT_LOADER__.register(clearBtnDefaultClass, 'clearBtnDefaultClass', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/ClearSearchButton.js');
 
-	  __REACT_HOT_LOADER__.register(ClearSearchButton, 'ClearSearchButton', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/ClearSearchButton.js');
+	  __REACT_HOT_LOADER__.register(ClearSearchButton, 'ClearSearchButton', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/ClearSearchButton.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/ClearSearchButton.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/ClearSearchButton.js');
 	}();
 
 	;
@@ -13045,9 +13139,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(TableFilter, 'TableFilter', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/TableFilter.js');
+	  __REACT_HOT_LOADER__.register(TableFilter, 'TableFilter', 'D:/RxNTGit/react-bootstrap-table/src/TableFilter.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/TableFilter.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/TableFilter.js');
 	}();
 
 	;
@@ -13921,7 +14015,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(TableDataStore, 'TableDataStore', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/store/TableDataStore.js');
+	  __REACT_HOT_LOADER__.register(TableDataStore, 'TableDataStore', 'D:/RxNTGit/react-bootstrap-table/src/store/TableDataStore.js');
 	}();
 
 	;
@@ -14001,9 +14095,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	          extraData = col.extraData,
 	          type = col.type;
 
+	      var cell = '';
 	      var value = typeof format !== 'undefined' ? format(row[field], row, extraData) : row[field];
-	      value = type === _Const2.default.CSV_NUMBER_TYPE ? Number(value) : '"' + value + '"';
-	      var cell = typeof value !== 'undefined' ? value : '';
+	      if (typeof value !== 'undefined') {
+	        if (type !== _Const2.default.CSV_NUMBER_TYPE) {
+	          value = value.toString().replace(/"/g, "'");
+	        }
+	        value = type === _Const2.default.CSV_NUMBER_TYPE ? Number(value) : '"' + value + '"';
+	        cell = typeof value !== 'undefined' ? value : '';
+	      }
+
 	      dataString += cell;
 	      if (i + 1 < keys.length) dataString += separator;
 	    });
@@ -14031,13 +14132,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(saveAs, 'saveAs', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/csv_export_util.js');
+	  __REACT_HOT_LOADER__.register(saveAs, 'saveAs', 'D:/RxNTGit/react-bootstrap-table/src/csv_export_util.js');
 
-	  __REACT_HOT_LOADER__.register(toString, 'toString', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/csv_export_util.js');
+	  __REACT_HOT_LOADER__.register(toString, 'toString', 'D:/RxNTGit/react-bootstrap-table/src/csv_export_util.js');
 
-	  __REACT_HOT_LOADER__.register(exportCSV, 'exportCSV', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/csv_export_util.js');
+	  __REACT_HOT_LOADER__.register(exportCSV, 'exportCSV', 'D:/RxNTGit/react-bootstrap-table/src/csv_export_util.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/csv_export_util.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/csv_export_util.js');
 	}();
 
 	;
@@ -14235,7 +14336,7 @@ return /******/ (function(modules) { // webpackBootstrap
 			return;
 		}
 
-		__REACT_HOT_LOADER__.register(saveAs, "saveAs", "/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/filesaver.js");
+		__REACT_HOT_LOADER__.register(saveAs, "saveAs", "D:/RxNTGit/react-bootstrap-table/src/filesaver.js");
 	}();
 
 	;
@@ -14339,7 +14440,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(Filter, 'Filter', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/Filter.js');
+	  __REACT_HOT_LOADER__.register(Filter, 'Filter', 'D:/RxNTGit/react-bootstrap-table/src/Filter.js');
 	}();
 
 	;
@@ -14731,9 +14832,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return;
 	  }
 
-	  __REACT_HOT_LOADER__.register(ButtonGroup, 'ButtonGroup', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/ButtonGroup.js');
+	  __REACT_HOT_LOADER__.register(ButtonGroup, 'ButtonGroup', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/ButtonGroup.js');
 
-	  __REACT_HOT_LOADER__.register(_default, 'default', '/Users/allen/Node/react-bootstrap-table-new/react-bootstrap-table/src/toolbar/ButtonGroup.js');
+	  __REACT_HOT_LOADER__.register(_default, 'default', 'D:/RxNTGit/react-bootstrap-table/src/toolbar/ButtonGroup.js');
 	}();
 
 	;
